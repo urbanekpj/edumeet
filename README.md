@@ -63,11 +63,7 @@ See more info about browsers storage limits:
 See here for [Docker](https://github.com/edumeet/edumeet-docker/) 
 
 ## Architecture
-![alt IMG](https://user-images.githubusercontent.com/920922/167305152-c66366c0-e921-4b74-ac39-20bce9fa20ee.png
-)
-
-![alt IMG2](https://user-images.githubusercontent.com/920922/167305096-17f62975-cbb9-4d4d-bdeb-af35882c9953.png
-)
+![Architecture](docs/images/general-arch.png)
 
 
 ## Community-driven support
