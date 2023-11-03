@@ -3,12 +3,10 @@
 * MM scales by threads so more cores are better
 * 8GB RAM is enough
 * Disk space is not so important - 10GB is a good start - but logs can get huge :) 
-* 1GB/s network adapter better with 2 or more ports + bonding
-* If you have more than 1 network interface + public IPs TURN server can run on same machine but we recommend extra TURN server or use a distributed TURN service
-* 1 TURN server / 4 eduMEET servers (TURN server can have fewer CPUs / cores)
+* 1GB/s network adapter or better
 
 ## Network
-The bandwidth requirements are quite tunable both on client and server, but server downstream to clients bandwidth will be one of the largest constraints on the system. If you have 1Gbit on your nodes, the number of users should not exceed ~600 per server node, and this can be run without a problem on a modern 8 core server. If you have higher bandwidth per node, the numbers can be scaled up linearly (2Gbit/16core/1200 users). Note that this is concurrent users, so if you anticipate ~10000 concurrent users, scale it according to these numbers. Real number of concurrent users depends on typical size of rooms(bigger is better), lastN config (lower is better), maxIncomingBitrate config (lower is better), use of simulcast. 
+The bandwidth requirements are quite tunable both on client and server, but server DOWNSTREAM to clients bandwidth will be one of the largest constraints on the system. If you have 1Gbit on your nodes, the number of users should not exceed ~600 per server node, and this can be run without a problem on a modern 8 core server. If you have higher bandwidth per node, the numbers can be scaled up linearly (2Gbit/16core/1200 users). Note that this is concurrent users, so if you anticipate ~10000 concurrent users, scale it according to these numbers. Real number of concurrent users depends on typical size of rooms(bigger rooms are usually more efficient), lastN config (lower is better), maxIncomingBitrate config (lower is better), use of simulcast. 
 
 ## Example calculation
 ### 1 Server
@@ -18,7 +16,7 @@ The bandwidth requirements are quite tunable both on client and server, but serv
 = 100 Mbps + 800 Mbps = 900 Mbps
 * 1 Gbit/s connection should be enough for low quality
 * For higher quality video you need **more** than 1Gbit/s
-* Additional servers will scale to 4000 consumers x number of server nodes
+* Additional servers will scale to: 4000 consumers x number of medianode nodes
 * Not enough network bandwidth will reduce video-quality automatically
 
 ### Consumer:
@@ -31,10 +29,10 @@ The bandwidth requirements are quite tunable both on client and server, but serv
 
 
 ### Bandwidth:
-* Configurable: maxIncomingBitrate per participant in server config
+* Configurable: maxIncomingBitrate per participant in management-server
 * Low video bandwidth is around 160Kbps (240p-vp8)
 * Typical acceptable good video bandwidth is around (800-1000)Kbps (720p)
-* Possibility to activate Simulcast / SVC to provide different clients with different bandwidths
+
 ## Scaling
 You can setup more than 1 server with same configuration and load balance with [HAproxy.md](HAproxy.md)
 This will scale linearly.
