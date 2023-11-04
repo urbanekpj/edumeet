@@ -1,4 +1,4 @@
-# ![edumeet logo](https://github.com/edumeet/edumeet-client/blob/release-4.0/public/images/logo.edumeet.svg) **WebRTC meeting service using [mediasoup](https://mediasoup.org).**
+# ![edumeet logo](https://github.com/edumeet/edumeet-client/blob/main/public/images/logo.edumeet.svg) **WebRTC meeting service using [mediasoup](https://mediasoup.org).**
 Official website: [edumeet.org](https://edumeet.org)
 
 Try it online at [letsmeet.no](https://letsmeet.no)
