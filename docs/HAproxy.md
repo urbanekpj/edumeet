@@ -9,74 +9,31 @@ In this basic example we use the following names and ips:
 
 ### Backend
 
-* `mm1.example.com` <=> `192.0.2.1`
-* `mm2.example.com` <=> `192.0.2.2`
-* `mm3.example.com` <=> `192.0.2.3`
+* `roomserver1.example.com` <=> `192.0.2.1`
+* `roomserver2.example.com` <=> `192.0.2.2`
+* `roomserver3.example.com` <=> `192.0.2.3`
 
-### Redis
-
-* `redis.example.com` <=> `192.0.2.4`
 
 ### Load balancer HAproxy
 
 * `meet.example.com` <=> `192.0.2.5`
 
-## Deploy multiple edumeet servers
+## Deploy multiple edumeet-room-servers
+Look in edumeet-docker or edumeet-room-server repo to see how to deploy multiple edumeet-room-server.
+TBD: Add example here
 
-This is most easily done using Ansible (see below), but can be done
-in any way you choose (manual, Docker, Ansible).
+## Deploy edumeet-media-nodes
+Look in edumeet-docker or edumeet-media-node repo to see how to deploy multiple one edumeet-media-node.
+TBD: Add example here
 
-Read more here: [mm-ansible](https://github.com/edumeet/edumeet-ansible)
-[![asciicast](https://asciinema.org/a/311365.svg)](https://asciinema.org/a/311365)
-
-## Setup Redis for central HTTP session store
-
-### Use one Redis for all edumeet servers
-
-* Deploy a Redis cluster for all instances.
-  * We will use in our actual example `192.0.2.4` as redis HA cluster ip. It is out of scope howto deploy it.
-
-OR
-
-* For testing you can use Redis from one the edumeet servers. e.g. If you plan only for testing on your first edumeet server.
-  * Configure Redis `redis.conf` to not only bind to your loopback but also to your global ip address too:
-
-    ``` plaintext
-    bind 192.0.2.1
-    ```
-
-    This example sets this to `192.0.2.1`, change this according to your local installation.
-
-  * Change your firewall config to allow incoming Redis. Example (depends on the type of firewall):
-
-    ``` plaintext
-        chain INPUT {
-            policy DROP;
-
-            saddr mm2.example.com proto tcp dport 6379 ACCEPT;
-            saddr mm3.example.com proto tcp dport 6379 ACCEPT;
-        }
-    ```
-
-  * **Set a password, or if you don't (like in this basic example) take care to set strict firewall rules**
-
-## Configure edumeet servers
-
-### Server config
-
-mm/configs/server/config.js
-
-``` js
-redisOptions : { host: '192.0.2.4'},
-listeningPort: 80,
-httpOnly: true,
-trustProxy           : ['192.0.2.5'],
-```
+## Deploy edumeet-management-server
+Look in edumeet-docker or edumeet-management-server repo to see how to deploy one edumeet-management-server.
+TBD: Add how to setup multiple edumeet-management-server
+TBD: Add how to scale up database
 
 ## Deploy HA proxy
-
+HA proxy is used to load balance between the edumeet-room-servers.
 * Configure certificate / letsencrypt for `meet.example.com`
-  * In this example we put a complete chain and private key in /root/certificate.pem.
 * Install and setup haproxy
 
   `apt install haproxy`
@@ -88,9 +45,9 @@ trustProxy           : ['192.0.2.5'],
         balance url_param roomId
         hash-type consistent
 
-        server mm1 192.0.2.1:80 check maxconn 2000 verify none
-        server mm2 192.0.2.2:80 check maxconn 2000 verify none
-        server mm3 192.0.2.3:80 check maxconn 2000 verify none
+        server roomserver1 192.0.2.1:80 check maxconn 2000 verify none
+        server roomserver2 192.0.2.2:80 check maxconn 2000 verify none
+        server roomserver3 192.0.2.3:80 check maxconn 2000 verify none
 
     frontend meet.example.com
         bind 192.0.2.5:80
