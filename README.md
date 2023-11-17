@@ -13,7 +13,7 @@ Try it online at [letsmeet.no](https://letsmeet.no)
 | **File sharing** | Share your files with the peers (torrent solution under the hood) |
 | **Chat messages**  | Text conversation with other participants |
 | **Local Recording**  | Record window/tab/screen content in browser supported formats with room audio and save them (**disabled by default**) |
-| **Authentication**  | Supported types: **OIDC**, **SAML**, **local db (text-based)** |
+| **Authentication**  | Supported types: **OIDC**, **SAML**, **Local DB** |
 
 
 ## Internationalization (22 languages) 
