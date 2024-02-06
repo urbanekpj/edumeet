@@ -42,8 +42,8 @@ services:
     ports:
     - 8443:443
     volumes:
-    - ${PWD}/../server/certs/mediasoup-demo.localhost.cert.pem:/etc/nginx/cert.pem:ro
-    - ${PWD}/../server/certs/mediasoup-demo.localhost.key.pem:/etc/nginx/key.pem:ro
+    - ${PWD}/../server/certs/edumeet-demo-cert.pem:/etc/nginx/cert.pem:ro
+    - ${PWD}/../server/certs/edumeet-demo-key.pem:/etc/nginx/key.pem:ro
     - ${PWD}/config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     extra_hosts:
       edumeet: 172.22.0.1
@@ -57,7 +57,7 @@ services:
     restart: unless-stopped
     volumes:
     - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-    - ./data/prometheus:/prometheus
+    - /tmp/data/prometheus:/prometheus
     command:
     - '--config.file=/etc/prometheus/prometheus.yml'
     - '--storage.tsdb.path=/prometheus'
@@ -100,7 +100,7 @@ services:
     - ./config/grafana-prometheus-datasource.yml:/etc/grafana/provisioning/datasources/prometheus.yml
     - ./config/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/all.yml
     - ./config/grafana-dashboards:/var/lib/grafana/dashboards
-    - ./data/grafana:/var/lib/grafana
+    - /tmp/data/grafana:/var/lib/grafana
     environment:
     - GF_SECURITY_ADMIN_USER=admin
     - GF_SECURITY_ADMIN_PASSWORD=admin

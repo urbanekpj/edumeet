@@ -1,12 +1,13 @@
 const os = require('os');
 
 // To gather ip address only on interface like eth0, ens0p3
-const ifaceWhiteListRegex = /^(eth.*)|(ens.*)|(tun.*)|(wlp.*)/
+const ifaceWhiteListRegex = /^(eth.*)|(ens.*)|(enp.*)|(tun.*)|(wlp.*)|(wlxe.*)/
 
 function getListenIps() {
 	let listenIP = [];
 	const ifaces = os.networkInterfaces();
 	Object.keys(ifaces).forEach(function (ifname) {
+
 		if (ifname.match(ifaceWhiteListRegex)) {
 			ifaces[ifname].forEach(function (iface) {
 				if (
@@ -21,6 +22,7 @@ function getListenIps() {
 			});
 		}
 	});
+
 	console.log('Using listenips:', listenIP);
 	return listenIP;
 }
@@ -74,7 +76,6 @@ module.exports =
 					clockRate  : 90000,
 					parameters :
 					{
-						'profile-id'             : 2,
 						'x-google-start-bitrate' : 1000
 					}
 				},

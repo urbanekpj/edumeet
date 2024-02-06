@@ -2639,7 +2639,14 @@ export default class RoomClient
 			'socket.io-client'
 		));
 	}
+	async addExternalSource({ video, audio })
+	{
+		logger.debug('addExternalSource()', video, audio);
 
+		return await this.sendRequest(
+			'addExternalSource',
+			{ video, audio });
+	}
 	async join({ roomId, joinVideo, joinAudio })
 	{
 		await this._loadDynamicImports();

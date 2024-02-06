@@ -20,10 +20,12 @@ import GroupIcon from '@material-ui/icons/Group';
 
 import { ReactComponent as PinIcon } from '../../images/pin-icon-baseline.svg';
 import { ReactComponent as UnpinIcon } from '../../images/pin-icon-outline.svg';
+import Sources from './Sources/Sources';
 
 const tabs =
 [
 	'users',
+	'sources',
 	'chat'
 ];
 
@@ -93,6 +95,18 @@ const MeetingDrawer = (props) =>
 							</Badge>
 						}
 					/>
+
+					<Tab
+						label={
+							<Badge color='secondary' badgeContent={raisedHands}>
+								<GroupIcon />&nbsp;
+								{(browser.platform !== 'mobile') && intl.formatMessage({
+									id             : 'label.sources',
+									defaultMessage : 'Sources'
+								})}
+							</Badge>
+						}
+					/>
 					<Tab
 						label={
 							<Badge
@@ -120,6 +134,7 @@ const MeetingDrawer = (props) =>
 				)}
 			</AppBar>
 			{currentToolTab === 'chat' && <Chat />}
+			{currentToolTab === 'sources' && <Sources />}
 			{currentToolTab === 'users' && <ParticipantList />}
 		</div>
 	);

@@ -3,7 +3,9 @@
 process.title = 'edumeet-server';
 
 import Logger from './lib/logger/Logger';
+
 const Room = require('./lib/Room');
+const Whip = require('./lib/Whip');
 const Peer = require('./lib/Peer');
 const userRoles = require('./lib/access/roles');
 const {
@@ -76,28 +78,31 @@ const mediasoupWorkers = new Map();
 // Map of Room instances indexed by roomId.
 const rooms = new Map();
 
+// Map of Whips instances indexed by roomId.
+const whips = new Map();
+
 // Map of Peer instances indexed by peerId.
 const peers = new Map();
 
 // TLS server configuration.
 const tls =
-{
-	cert          : fs.readFileSync(config.tls.cert),
-	key           : fs.readFileSync(config.tls.key),
-	secureOptions : 'tlsv12',
-	ciphers       :
-		[
-			'ECDHE-ECDSA-AES128-GCM-SHA256',
-			'ECDHE-RSA-AES128-GCM-SHA256',
-			'ECDHE-ECDSA-AES256-GCM-SHA384',
-			'ECDHE-RSA-AES256-GCM-SHA384',
-			'ECDHE-ECDSA-CHACHA20-POLY1305',
-			'ECDHE-RSA-CHACHA20-POLY1305',
-			'DHE-RSA-AES128-GCM-SHA256',
-			'DHE-RSA-AES256-GCM-SHA384'
-		].join(':'),
-	honorCipherOrder : true
-};
+	{
+		cert          : fs.readFileSync(config.tls.cert),
+		key           : fs.readFileSync(config.tls.key),
+		secureOptions : 'tlsv12',
+		ciphers       :
+			[
+				'ECDHE-ECDSA-AES128-GCM-SHA256',
+				'ECDHE-RSA-AES128-GCM-SHA256',
+				'ECDHE-ECDSA-AES256-GCM-SHA384',
+				'ECDHE-RSA-AES256-GCM-SHA384',
+				'ECDHE-ECDSA-CHACHA20-POLY1305',
+				'ECDHE-RSA-CHACHA20-POLY1305',
+				'DHE-RSA-AES128-GCM-SHA256',
+				'DHE-RSA-AES256-GCM-SHA384'
+			].join(':'),
+		honorCipherOrder : true
+	};
 
 const app = express();
 
@@ -161,6 +166,9 @@ async function run()
 			await setupAuth();
 		}
 
+		logger.warn('setupWhip=======================================================================================');
+		await setupWhip();
+
 		// Run a mediasoup Worker.
 		await runMediasoupWorkers();
 
@@ -181,13 +189,14 @@ async function run()
 		{
 			const trackingId = uuidv4();
 
-			res.status(500).send(
-				`<h1>Internal Server Error</h1>
+			res.status(500)
+				.send(
+					`<h1>Internal Server Error</h1>
 				<p>If you report this error, please also report this 
 				<i>tracking ID</i> which makes it possible to locate your session
 				in the logs which are available to the system administrator: 
 				<b>${trackingId}</b></p>`
-			);
+				);
 			logger.error(
 				'Express error handler dump with tracking ID: %s, error dump: %o',
 				trackingId, err);
@@ -351,17 +360,152 @@ function setupOIDC(oidcIssuer)
 			}
 
 			const user =
-			{
-				id        : tokenset.claims.sub,
-				provider  : tokenset.claims.iss,
-				_userinfo : userinfo
-			};
+				{
+					id        : tokenset.claims.sub,
+					provider  : tokenset.claims.iss,
+					_userinfo : userinfo
+				};
 
 			return done(null, user);
 		}
 	);
 
 	passport.use('oidc', oidcStrategy);
+}
+
+async function setupWhip()
+{
+	app.post('/whip/:roomId/:id', bodyParser.text({ type: 'application/sdp' }), async (req, res, next) =>
+	{
+		const roomId = req.params.roomId;
+		const id = req.params.id;
+
+		try
+		{
+			if (!id || !roomId)
+			{
+				res.status(404)
+					.send('Invalid endpoint ID');
+
+				return;
+			}
+			// Check the Bearer token
+			const auth = req.headers['authorization'];
+
+			if (!auth || auth.indexOf('Bearer ') < 0)
+			{
+				res.status(403)
+					.send('Unauthorized');
+
+				return;
+			}
+			const token = auth.split('Bearer ')[1];
+			const whip = whips.get(roomId);
+
+			if (!whip || !token)
+			{
+				res.status(404)
+					.send('Unauthorized');
+
+				return;
+			}
+
+			if (!whip.isValidAuth(id, token))
+			{
+				res.status(404)
+					.send('Unauthorized');
+
+				return;
+			}
+
+			const Sdp = await whip.handlePost({ id, sdp: req.body });
+			const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+
+			logger.error('fulllllllllllllllllllllllllllllllll', fullUrl);
+			res.setHeader(
+				'Location',
+				fullUrl
+			);
+			res.set('Content-Type', 'application/sdp');
+			res.status(201)
+				.send(Sdp);
+		}
+		catch (e)
+		{
+			logger.error('Whip post caught:', e);
+			res.status(500)
+				.send(e.toString());
+
+		}
+	});
+
+	app.patch('/whip/:roomId/:id', (req, res) =>
+	{
+		try
+		{
+			const roomId = req.params.roomId;
+			const id = req.params.id;
+
+			if (!id || !roomId)
+			{
+				res.status(404)
+					.send('Invalid endpoint ID');
+
+				return;
+			}
+
+			const whip = whips[roomId];
+
+			if (!whip)
+			{
+				res.status(404)
+					.send('Unauthorized');
+
+				return;
+			}
+
+			const Sdp = whip.handlePatch({ id });
+
+			res.set('Content-Type', 'application/sdp');
+			res.status(200)
+				.send(Sdp);
+		}
+		catch (e)
+		{
+			logger.error('Whip post caught:', e);
+			res.status(500)
+				.send(e.toString());
+
+		}
+	});
+	app.delete('/whip/:roomId/:id', async (req, res) =>
+	{
+		try
+		{
+			const roomId = req.params.roomId;
+			const id = req.params.id;
+			const whip = whips.get(roomId);
+
+			if (!whip)
+			{
+				res.status(404)
+					.send('Invalid');
+
+				return;
+			}
+
+			await whip.handleDelete({ id });
+			res.status(200)
+				.send('removed');
+		}
+		catch (e)
+		{
+			logger.error('Whip post caught:', e);
+			res.status(500)
+				.send(e.toString());
+
+		}
+	});
 }
 
 async function setupAuth()
@@ -449,9 +593,9 @@ async function setupAuth()
 				roomId : req.query.roomId
 			};
 
-			if (authStrategy== 'saml' || authStrategy=='local')
+			if (authStrategy == 'saml' || authStrategy == 'local')
 			{
-				req.session.authState=state;
+				req.session.authState = state;
 			}
 		}
 
@@ -494,7 +638,7 @@ async function setupAuth()
 	// logout
 	app.get('/auth/logout', (req, res) =>
 	{
-		logger.debug('/auth/logout');
+		logger.error('/auth/logout');
 		const { peerId } = req.session;
 
 		const peer = peers.get(peerId);
@@ -553,7 +697,7 @@ async function setupAuth()
 				let state;
 
 				if (authStrategy == 'saml' || authStrategy == 'local')
-					state=req.session.authState;
+					state = req.session.authState;
 				else
 				{
 					if (req.method === 'GET')
@@ -615,6 +759,8 @@ async function runHttpsServer()
 
 	app.all('*', async (req, res, next) =>
 	{
+
+		logger.debug('**************************************************************************************');
 		if (req.secure || config.httpOnly)
 		{
 			let ltiURL;
@@ -666,10 +812,10 @@ async function runHttpsServer()
 	else
 	{
 		// https
-		// spdy is not working anymore with node.js > 15 and express 5 
+		// spdy is not working anymore with node.js > 15 and express 5
 		// is not ready yet for http2
 		// https://github.com/spdy-http2/node-spdy/issues/380
-		if (typeof(spdy) === 'undefined')
+		if (typeof (spdy) === 'undefined')
 		{
 			logger.info('Found node.js version >= 15 disabling spdy / http2 and using node.js/https module');
 			mainListener = https.createServer(tls, app);
@@ -713,7 +859,8 @@ function isPathAlreadyTaken(actualUrl)
 
 	alreadyTakenPath.forEach((path) =>
 	{
-		if (actualUrl.toString().startsWith(path))
+		if (actualUrl.toString()
+			.startsWith(path))
 			return true;
 	});
 
@@ -988,14 +1135,20 @@ async function getOrCreateRoom({ roomId })
 		// const mediasoupWorker = getMediasoupWorker();
 
 		room = await Room.create({ mediasoupWorkers, roomId, peers });
+		logger.error(room.id);
+		const whip = await Whip.create({ room });
+
+		room.whip = whip;
 
 		rooms.set(roomId, room);
+		whips.set(roomId, whip);
 
 		statusLog();
 
 		room.on('close', () =>
 		{
 			rooms.delete(roomId);
+			whips.delete(roomId);
 
 			statusLog();
 		});

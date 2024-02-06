@@ -320,7 +320,6 @@ const configSchema = convict({
 						clockRate  : 90000,
 						parameters :
 						{
-							'profile-id'             : 2,
 							'x-google-start-bitrate' : 1000
 						}
 					},
@@ -470,7 +469,7 @@ const configSchema = convict({
 	},
 	// Array of permissions. If no peer with the permission in question
 	// is in the room, all peers are permitted to do the action. The peers
-	// that are allowed because of this rule will not be able to do this 
+	// that are allowed because of this rule will not be able to do this
 	// action as soon as a peer with the permission joins. In this example
 	// everyone will be able to lock/unlock room until a MODERATOR joins.
 	allowWhenRoleMissing : {
