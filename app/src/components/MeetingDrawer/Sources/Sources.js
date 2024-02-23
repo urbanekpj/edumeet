@@ -5,6 +5,7 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import { withRoomContext } from '../../../RoomContext';
 import { connect } from 'react-redux';
+import Source from './Source';
 
 const styles = () =>
 	({
@@ -21,8 +22,10 @@ const styles = () =>
 const Sources = (props) =>
 {
 	const {
-		classes,
-		roomClient
+		roomClient,
+		version,
+		sources,
+		classes
 	} = props;
 
 	const [ data, setData ] = useState({});
@@ -44,11 +47,16 @@ const Sources = (props) =>
 			}}
 			> Init </Button>
 			<pre> {JSON.stringify(data, null, 2)} </pre>
-			<Button size='small' onClick={(e) =>
-			{
 
-			}}
-			> Unpublished </Button>
+			<pre> {version} </pre>
+
+			{sources.length === 0
+				? (<div>No Sources</div>)
+				: Object.values(sources).map((item) =>
+				{
+					return <Source key={item.id} source={item}/>;
+				})
+			}
 		</Paper>
 	);
 };
@@ -56,11 +64,15 @@ const Sources = (props) =>
 Sources.propTypes =
 	{
 		classes    : PropTypes.object.isRequired,
-		roomClient : PropTypes.object.isRequired
+		roomClient : PropTypes.object.isRequired,
+		version    : PropTypes.string.isRequired,
+		sources    : PropTypes.object.isRequired
 	};
 
-const mapStateToProps = () =>
-	({});
+const mapStateToProps = (state) =>
+{
+	return state.terminal;
+};
 
 const mapDispatchToProps = {};
 

@@ -421,7 +421,6 @@ async function setupWhip()
 			const Sdp = await whip.handlePost({ id, sdp: req.body });
 			const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 
-			logger.error('fulllllllllllllllllllllllllllllllll', fullUrl);
 			res.setHeader(
 				'Location',
 				fullUrl

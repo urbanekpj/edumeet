@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import room from './room';
+import terminal from './terminal';
 import me from './me';
 import producers from './producers';
 import consumers from './consumers';
@@ -19,6 +20,7 @@ import intl from './intl';
 export default combineReducers({
 	// intl : intlReducer,
 	room,
+	terminal,
 	me,
 	producers,
 	consumers,

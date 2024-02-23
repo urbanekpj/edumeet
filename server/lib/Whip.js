@@ -47,7 +47,7 @@ class Whip extends EventEmitter
 		const token = 'asdf';
 
 		logger.error(id, token, this.endpoints[id]);
-		this.endpoints.set(id, { peer, data, forceTcp: data.forceTcp, token });
+		this.endpoints.set(id, { peer, data, forceTcp: data.forceTcp, token, producers: [] });
 		peer.on('close', () =>
 		{
 			this.endpoints.delete(id);

@@ -12,6 +12,7 @@ import randomString from 'random-string';
 import Logger from './Logger';
 import debug from 'debug';
 import RoomClient from './RoomClient';
+import TerminalClient from './TerminalClient';
 import RoomContext from './RoomContext';
 import deviceInfo from './deviceInfo';
 import * as meActions from './store/actions/meActions';
@@ -34,6 +35,8 @@ import { recorder } from './BrowserRecorder';
 import './index.css';
 
 import { config, configError } from './config';
+import { Client, makeTransport } from '@medvc/core_client';
+import { Sources as SourcesApi } from '@medvc/terminal_client';
 
 const App = LazyPreload(() => import(/* webpackChunkName: "app" */ './components/App'));
 
@@ -66,7 +69,10 @@ const logger = new Logger();
 
 let roomClient;
 
+let terminalClient;
+
 RoomClient.init({ store });
+TerminalClient.init({ store });
 
 const theme = createMuiTheme(config.theme);
 
@@ -225,6 +231,10 @@ function run()
 		})
 	);
 
+	const client = new Client(makeTransport(), {});
+
+	const sources = new SourcesApi(client);
+
 	roomClient = new RoomClient(
 		{
 			peerId,
@@ -237,12 +247,13 @@ function run()
 			muted,
 			basePath
 		});
+	terminalClient = new TerminalClient({ uri: 'http://127.0.0.1:5000' });
 
+	roomClient.terminalClient = terminalClient;
 	if (hideNoVideoParticipants === 'true')
 	{
 		roomClient.setHideNoVideoParticipants(true);
 	}
-
 	if (hideSelfView === 'true')
 	{
 		store.dispatch(roomActions.setHideSelfView(hideSelfView));
