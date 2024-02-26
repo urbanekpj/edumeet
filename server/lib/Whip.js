@@ -43,8 +43,10 @@ class Whip extends EventEmitter
 
 	createEndpoint({ peer, data })
 	{
-		const id = '123';
-		const token = 'asdf';
+		const id =Math.random().toString(36)
+			.slice(2, 7);
+		const token = Math.random().toString(36)
+			.slice(2, 7);
 
 		logger.error(id, token, this.endpoints[id]);
 		this.endpoints.set(id, { peer, data, forceTcp: data.forceTcp, token, producers: [] });

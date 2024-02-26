@@ -35,8 +35,6 @@ import { recorder } from './BrowserRecorder';
 import './index.css';
 
 import { config, configError } from './config';
-import { Client, makeTransport } from '@medvc/core_client';
-import { Sources as SourcesApi } from '@medvc/terminal_client';
 
 const App = LazyPreload(() => import(/* webpackChunkName: "app" */ './components/App'));
 
@@ -230,10 +228,6 @@ function run()
 			loginEnabled : config.loginEnabled
 		})
 	);
-
-	const client = new Client(makeTransport(), {});
-
-	const sources = new SourcesApi(client);
 
 	roomClient = new RoomClient(
 		{

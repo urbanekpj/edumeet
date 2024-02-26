@@ -130,7 +130,7 @@ const VIDEO_SVC_ENCODINGS =
  * Validates the simulcast `encodings` array extracting the resolution scalings
  * array.
  * ref. https://www.w3.org/TR/webrtc/#rtp-media-api
- * 
+ *
  * @param {*} encodings
  * @returns the resolution scalings array
  */
@@ -1359,7 +1359,7 @@ export default class RoomClient
 		{
 			volume = Math.round(volume);
 
-			// Update only if there is a bigger diff 
+			// Update only if there is a bigger diff
 			if (this._micProducer && Math.abs(volume - this._hark.lastVolume) > 0.5)
 			{
 				// Decay calculation: keep in mind that volume range is -100 ... 0 (dB)
@@ -1619,8 +1619,8 @@ export default class RoomClient
 				}
 			}
 
-			// TODO update recorder inputs 
-			/* 
+			// TODO update recorder inputs
+			/*
 			if (recorder != null)
 			{
 				recorder.addTrack(new MediaStream([ this._micProducer.track ]));
@@ -1742,10 +1742,10 @@ export default class RoomClient
 					const encodings = this._getEncodings(width, height);
 					const resolutionScalings = getResolutionScalings(encodings);
 
-					/** 
-					 * TODO: 
-					 * I receive DOMException: 
-					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection': 
+					/**
+					 * TODO:
+					 * I receive DOMException:
+					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection':
 					 * Attempted to set an unimplemented parameter of RtpParameters.
 					encodings.forEach((encoding) =>
 					{
@@ -4270,6 +4270,46 @@ export default class RoomClient
 		}
 	}
 
+	async addExtraVideoPreview({ stream })
+	{
+		logger.debug(
+			'addExtraVideoPreview()'
+		);
+
+		class PreviewFakeProducer
+		{
+			constructor(track, appData = {})
+			{
+				this.id = Math.random().toString(36)
+					.slice(2, 7);
+				this.track = track;
+				this.appData = appData;
+				this.encodings = [];
+				this.codecOptions = {};
+				this.stopTracks = true;
+				this.disableTrackOnPause = true;
+				this.zeroRtpOnPause = false;
+			}
+		}
+
+		const appData = {}; // Pass your custom application data object here if needed
+		const producer = new PreviewFakeProducer(stream, appData);
+
+		this._extraVideoProducers.set(producer.id, producer);
+
+		store.dispatch(producerActions.addProducer(
+			{
+				id            : producer.id,
+				deviceLabel   : 'someLabel',
+				source        : 'extravideo',
+				paused        : producer.paused,
+				track         : producer.track,
+				rtpParameters : producer.rtpParameters,
+				codec         : ''
+			}));
+
+	}
+
 	async addExtraVideo(videoDeviceId)
 	{
 		logger.debug(
@@ -4341,10 +4381,10 @@ export default class RoomClient
 					const encodings = this._getEncodings(width, height);
 					const resolutionScalings = getResolutionScalings(encodings);
 
-					/** 
-					 * TODO: 
-					 * I receive DOMException: 
-					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection': 
+					/**
+					 * TODO:
+					 * I receive DOMException:
+					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection':
 					 * Attempted to set an unimplemented parameter of RtpParameters.
 					encodings.forEach((encoding) =>
 					{
@@ -4602,10 +4642,10 @@ export default class RoomClient
 
 					const resolutionScalings = getResolutionScalings(encodings);
 
-					/** 
-					 * TODO: 
-					 * I receive DOMException: 
-					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection': 
+					/**
+					 * TODO:
+					 * I receive DOMException:
+					 * Failed to execute 'addTransceiver' on 'RTCPeerConnection':
 					 * Attempted to set an unimplemented parameter of RtpParameters.
 					encodings.forEach((encoding) =>
 					{

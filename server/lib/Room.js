@@ -968,7 +968,7 @@ class Room extends EventEmitter
 
 					const url = this.whip.createEndpoint({ peer, data: request.data });
 
-					cb(null, { url });
+					cb(null, url);
 				}
 				catch (e)
 				{
