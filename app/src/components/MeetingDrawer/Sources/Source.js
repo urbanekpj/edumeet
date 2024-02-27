@@ -36,7 +36,6 @@ const Source = (props) =>
 		classes
 	} = props;
 
-	const [ statusData, setStatus ] = useState({});
 	const [ devID, setDevId ] = useState('');
 
 	navigator.mediaDevices.enumerateDevices()
@@ -66,15 +65,12 @@ const Source = (props) =>
 					.then(
 						(data) =>
 						{
-							setStatus(data);
 							// eslint-disable-next-line no-restricted-globals
 							const full = `${location.protocol}//${location.host}${data['url']}`;
 
-							roomClient.terminalClient.terminal.start(source.id, full, data['token'])
-								.then(async (status) =>
+							roomClient.terminalClient.start(source.id, full, data['token'])
+								.then(async () =>
 								{
-									logger.error(status);
-									setStatus(status);
 									const stream = await navigator.mediaDevices.getUserMedia({
 										video : {
 											deviceId : devID
@@ -82,21 +78,33 @@ const Source = (props) =>
 									});
 
 									await roomClient.addExtraVideoPreview(
-										{ stream: stream.getTracks()[0] });
+										{
+											id      : source.id,
+											stream  : stream.getTracks()[0],
+											onClose : () =>
+											{
+												roomClient.terminalClient.stop(source.id);
+											}
+										});
 								})
 								.catch((err) =>
 								{
-									setStatus(err);
+									logger.error(err);
 								});
 						}
 					)
 					.catch((err) =>
 					{
-						setStatus(err);
+						logger.error(err);
 					});
 			}}
-			> Init </Button>
-			<div>{JSON.stringify(statusData)}</div>
+			> Start </Button>
+
+			<Button className={classes.button} size='small' onClick={() =>
+			{
+				roomClient.disableExtraVideo(source.id);
+			}}
+			> Stop </Button>
 		</div>
 	);
 };

@@ -39,36 +39,36 @@ let ScreenShare;
 const logger = new Logger('RoomClient');
 
 const VIDEO_CONSTRAINS =
-{
-	'low' :
 	{
-		width : 320
-	},
-	'medium' :
-	{
-		width : 640
-	},
-	'high' :
-	{
-		width : 1280
-	},
-	'veryhigh' :
-	{
-		width : 1920
-	},
-	'ultra' :
-	{
-		width : 3840
-	}
-};
+		'low' :
+			{
+				width : 320
+			},
+		'medium' :
+			{
+				width : 640
+			},
+		'high' :
+			{
+				width : 1280
+			},
+		'veryhigh' :
+			{
+				width : 1920
+			},
+		'ultra' :
+			{
+				width : 3840
+			}
+	};
 
 const DEFAULT_NETWORK_PRIORITIES =
-{
-	audio            : 'high',
-	mainVideo        : 'high',
-	additionalVideos : 'medium',
-	screenShare      : 'medium'
-};
+	{
+		audio            : 'high',
+		mainVideo        : 'high',
+		additionalVideos : 'medium',
+		screenShare      : 'medium'
+	};
 
 function getVideoConstrains(resolution, aspectRatio)
 {
@@ -79,52 +79,52 @@ function getVideoConstrains(resolution, aspectRatio)
 }
 
 const PC_PROPRIETARY_CONSTRAINTS =
-{
-	optional : [ { googDscp: true } ]
-};
+	{
+		optional : [ { googDscp: true } ]
+	};
 
 const VIDEO_SIMULCAST_PROFILES =
-{
-	3840 :
-		[
-			{ scaleResolutionDownBy: 12, maxBitRate: 150000 },
-			{ scaleResolutionDownBy: 6, maxBitRate: 500000 },
-			{ scaleResolutionDownBy: 1, maxBitRate: 10000000 }
-		],
-	1920 :
-		[
-			{ scaleResolutionDownBy: 6, maxBitRate: 150000 },
-			{ scaleResolutionDownBy: 3, maxBitRate: 500000 },
-			{ scaleResolutionDownBy: 1, maxBitRate: 3500000 }
-		],
-	1280 :
-		[
-			{ scaleResolutionDownBy: 4, maxBitRate: 150000 },
-			{ scaleResolutionDownBy: 2, maxBitRate: 500000 },
-			{ scaleResolutionDownBy: 1, maxBitRate: 1200000 }
-		],
-	640 :
-	[
-		{ scaleResolutionDownBy: 2, maxBitRate: 150000 },
-		{ scaleResolutionDownBy: 1, maxBitRate: 500000 }
-	],
-	320 :
-	[
-		{ scaleResolutionDownBy: 1, maxBitRate: 150000 }
-	]
-};
+	{
+		3840 :
+			[
+				{ scaleResolutionDownBy: 12, maxBitRate: 150000 },
+				{ scaleResolutionDownBy: 6, maxBitRate: 500000 },
+				{ scaleResolutionDownBy: 1, maxBitRate: 10000000 }
+			],
+		1920 :
+			[
+				{ scaleResolutionDownBy: 6, maxBitRate: 150000 },
+				{ scaleResolutionDownBy: 3, maxBitRate: 500000 },
+				{ scaleResolutionDownBy: 1, maxBitRate: 3500000 }
+			],
+		1280 :
+			[
+				{ scaleResolutionDownBy: 4, maxBitRate: 150000 },
+				{ scaleResolutionDownBy: 2, maxBitRate: 500000 },
+				{ scaleResolutionDownBy: 1, maxBitRate: 1200000 }
+			],
+		640 :
+			[
+				{ scaleResolutionDownBy: 2, maxBitRate: 150000 },
+				{ scaleResolutionDownBy: 1, maxBitRate: 500000 }
+			],
+		320 :
+			[
+				{ scaleResolutionDownBy: 1, maxBitRate: 150000 }
+			]
+	};
 
 // Used for VP9 webcam video.
 const VIDEO_KSVC_ENCODINGS =
-[
-	{ scalabilityMode: 'S3T3_KEY' }
-];
+	[
+		{ scalabilityMode: 'S3T3_KEY' }
+	];
 
 // Used for VP9 desktop sharing.
 const VIDEO_SVC_ENCODINGS =
-[
-	{ scalabilityMode: 'S3T3', dtx: true }
-];
+	[
+		{ scalabilityMode: 'S3T3', dtx: true }
+	];
 
 /**
  * Validates the simulcast `encodings` array extracting the resolution scalings
@@ -144,7 +144,7 @@ function getResolutionScalings(encodings)
 		const { spatialLayers } =
 			mediasoupClient.parseScalabilityMode(encodings[0].scalabilityMode);
 
-		for (let i=0; i < spatialLayers; i++)
+		for (let i = 0; i < spatialLayers; i++)
 		{
 			resolutionScalings.push(2 ** (spatialLayers - i - 1));
 		}
@@ -242,11 +242,11 @@ export default class RoomClient
 		this._basePath = basePath;
 
 		// Use displayName
-		this._displayName=null;
+		this._displayName = null;
 		if (displayName)
 		{
 			store.dispatch(settingsActions.setDisplayName(displayName));
-			this._displayName=displayName;
+			this._displayName = displayName;
 		}
 
 		this._tracker = 'wss://tracker.lab.vvc.niif.hu:443';
@@ -282,7 +282,7 @@ export default class RoomClient
 				if (v != null && v.play !== undefined)
 					this._soundAlerts[k] = {
 						audio : new Audio(v.play),
-						delay : v.delay ? v.delay: 0
+						delay : v.delay ? v.delay : 0
 					};
 			}
 		}
@@ -642,7 +642,7 @@ export default class RoomClient
 		store.dispatch(intlActions.updateIntl({
 			locale   : one.locale[0],
 			messages : one.messages,
-			list   	 : locales.getList()
+			list     : locales.getList()
 		}));
 
 		intl = createIntl({
@@ -650,7 +650,10 @@ export default class RoomClient
 			messages : store.getState().intl.messages
 		});
 
-		document.documentElement.lang = store.getState().intl.locale.toUpperCase();
+		document.documentElement.lang = store.getState()
+			.intl
+			.locale
+			.toUpperCase();
 
 	}
 
@@ -689,14 +692,14 @@ export default class RoomClient
 
 		let displayName;
 
-		if (typeof(data.displayName) === 'undefined' || !data.displayName)
+		if (typeof (data.displayName) === 'undefined' || !data.displayName)
 			displayName = '';
 		else
 			displayName = data.displayName;
 
 		store.dispatch(settingsActions.setDisplayName(displayName));
 
-		this._displayName=displayName;
+		this._displayName = displayName;
 
 		if (!store.getState().settings.localPicture)
 		{
@@ -897,7 +900,7 @@ export default class RoomClient
 					})
 				}));
 
-			this._displayName=displayName;
+			this._displayName = displayName;
 
 		}
 		catch (error)
@@ -999,9 +1002,10 @@ export default class RoomClient
 
 		const chatEl = html.querySelector('#chatList');
 
-		html.querySelector('body').replaceChildren(chatEl);
+		html.querySelector('body')
+			.replaceChildren(chatEl);
 
-		const fileName= 'chat.html';
+		const fileName = 'chat.html';
 
 		// remove unused tags
 		[ 'script', 'link' ].forEach((element) =>
@@ -1027,7 +1031,10 @@ export default class RoomClient
 
 					reader.readAsDataURL(data);
 
-					reader.onloadend = () => { img.src = reader.result; };
+					reader.onloadend = () =>
+					{
+						img.src = reader.result;
+					};
 				});
 		}
 
@@ -1389,7 +1396,7 @@ export default class RoomClient
 
 			if (
 				(store.getState().settings.voiceActivatedUnmute ||
-				store.getState().me.isAutoMuted) &&
+					store.getState().me.isAutoMuted) &&
 				this._micProducer &&
 				this._micProducer.paused
 			)
@@ -1537,21 +1544,21 @@ export default class RoomClient
 					{
 						track,
 						encodings :
-						[
-							{
-								networkPriority
-							}
-						],
+							[
+								{
+									networkPriority
+								}
+							],
 						codecOptions :
-						{
-							opusStereo          : opusStereo,
-							opusFec             : opusFec,
-							opusDtx             : opusDtx,
-							opusMaxPlaybackRate : opusMaxPlaybackRate,
-							opusPtime           : opusPtime
-						},
+							{
+								opusStereo          : opusStereo,
+								opusFec             : opusFec,
+								opusDtx             : opusDtx,
+								opusMaxPlaybackRate : opusMaxPlaybackRate,
+								opusPtime           : opusPtime
+							},
 						appData :
-						{ source: 'mic' }
+							{ source: 'mic' }
 					});
 
 				store.dispatch(producerActions.addProducer(
@@ -1717,11 +1724,11 @@ export default class RoomClient
 				const stream = await navigator.mediaDevices.getUserMedia(
 					{
 						video :
-						{
-							deviceId : { ideal: deviceId },
-							...getVideoConstrains(resolution, aspectRatio),
-							frameRate
-						}
+							{
+								deviceId : { ideal: deviceId },
+								...getVideoConstrains(resolution, aspectRatio),
+								frameRate
+							}
 					});
 
 				([ track ] = stream.getVideoTracks());
@@ -1751,24 +1758,24 @@ export default class RoomClient
 					{
 						encoding.networkPriority=networkPriority;
 					});
-					*/
-					encodings[0].networkPriority=networkPriority;
+					 */
+					encodings[0].networkPriority = networkPriority;
 
 					this._webcamProducer = await this._sendTransport.produce(
 						{
 							track,
 							encodings,
 							codecOptions :
-							{
-								videoGoogleStartBitrate : 1000
-							},
+								{
+									videoGoogleStartBitrate : 1000
+								},
 							appData :
-							{
-								source : 'webcam',
-								width,
-								height,
-								resolutionScalings
-							}
+								{
+									source : 'webcam',
+									width,
+									height,
+									resolutionScalings
+								}
 						});
 				}
 				else
@@ -1777,11 +1784,11 @@ export default class RoomClient
 						track,
 						encodings : [ { networkPriority } ],
 						appData   :
-						{
-							source : 'webcam',
-							width,
-							height
-						}
+							{
+								source : 'webcam',
+								width,
+								height
+							}
 					});
 				}
 
@@ -2473,8 +2480,8 @@ export default class RoomClient
 		logger.debug(
 			'setConsumerPreferredLayersMax() [consumerId:"%s"]', consumer.id);
 
-		if (consumer.preferredSpatialLayer !== consumer.spatialLayers -1 ||
-			consumer.preferredTemporalLayer !== consumer.temporalLayers -1)
+		if (consumer.preferredSpatialLayer !== consumer.spatialLayers - 1 ||
+			consumer.preferredTemporalLayer !== consumer.temporalLayers - 1)
 		{
 			return this.setConsumerPreferredLayers(consumer.id,
 				consumer.spatialLayers - 1, consumer.temporalLayers - 1);
@@ -2639,6 +2646,7 @@ export default class RoomClient
 			'socket.io-client'
 		));
 	}
+
 	async addExternalSource({ video, audio })
 	{
 		logger.debug('addExternalSource()', video, audio);
@@ -2647,6 +2655,7 @@ export default class RoomClient
 			'addExternalSource',
 			{ video, audio });
 	}
+
 	async join({ roomId, joinVideo, joinAudio })
 	{
 		await this._loadDynamicImports();
@@ -3010,7 +3019,7 @@ export default class RoomClient
 							}));
 
 						if (peerId === this._peerId)
-							this._displayName=displayName;
+							this._displayName = displayName;
 
 						break;
 					}
@@ -3114,7 +3123,7 @@ export default class RoomClient
 							}));
 
 						if (peerId === this._peerId)
-							this._displayName=displayName;
+							this._displayName = displayName;
 
 						break;
 					}
@@ -3190,7 +3199,7 @@ export default class RoomClient
 						if (
 							!store.getState().toolarea.toolAreaOpen ||
 							(store.getState().toolarea.toolAreaOpen &&
-							store.getState().toolarea.currentToolTab !== 'chat')
+								store.getState().toolarea.currentToolTab !== 'chat')
 						) // Make sound
 						{
 							store.dispatch(
@@ -3235,7 +3244,7 @@ export default class RoomClient
 						if (
 							!store.getState().toolarea.toolAreaOpen ||
 							(store.getState().toolarea.toolAreaOpen &&
-							store.getState().toolarea.currentToolTab !== 'chat')
+								store.getState().toolarea.currentToolTab !== 'chat')
 						) // Make sound
 						{
 							store.dispatch(
@@ -3952,7 +3961,8 @@ export default class RoomClient
 
 			const roomUserRoles = new Map();
 
-			Object.values(userRoles).forEach((val) => roomUserRoles.set(val.id, val));
+			Object.values(userRoles)
+				.forEach((val) => roomUserRoles.set(val.id, val));
 
 			store.dispatch(roomActions.setUserRoles(roomUserRoles));
 
@@ -4270,7 +4280,7 @@ export default class RoomClient
 		}
 	}
 
-	async addExtraVideoPreview({ stream })
+	async addExtraVideoPreview({ id, stream, onClose })
 	{
 		logger.debug(
 			'addExtraVideoPreview()'
@@ -4280,8 +4290,7 @@ export default class RoomClient
 		{
 			constructor(track, appData = {})
 			{
-				this.id = Math.random().toString(36)
-					.slice(2, 7);
+				this.id = id;
 				this.track = track;
 				this.appData = appData;
 				this.encodings = [];
@@ -4289,6 +4298,13 @@ export default class RoomClient
 				this.stopTracks = true;
 				this.disableTrackOnPause = true;
 				this.zeroRtpOnPause = false;
+				this.isLocal = true;
+			}
+
+			close()
+			{
+				logger.debug('close');
+				onClose();
 			}
 		}
 
@@ -4343,11 +4359,11 @@ export default class RoomClient
 			const stream = await navigator.mediaDevices.getUserMedia(
 				{
 					video :
-					{
-						deviceId : { ideal: videoDeviceId },
-						...getVideoConstrains(resolution, aspectRatio),
-						frameRate
-					}
+						{
+							deviceId : { ideal: videoDeviceId },
+							...getVideoConstrains(resolution, aspectRatio),
+							frameRate
+						}
 				});
 
 			([ track ] = stream.getVideoTracks());
@@ -4360,9 +4376,9 @@ export default class RoomClient
 
 			this._extraVideoProducers.forEach(function(value)
 			{
-				if (value._track.label===track.label)
+				if (value._track.label === track.label)
 				{
-					exists=true;
+					exists = true;
 				}
 			});
 
@@ -4390,24 +4406,24 @@ export default class RoomClient
 					{
 						encoding.networkPriority=networkPriority;
 					});
-					*/
-					encodings[0].networkPriority=networkPriority;
+					 */
+					encodings[0].networkPriority = networkPriority;
 
 					producer = await this._sendTransport.produce(
 						{
 							track,
 							encodings,
 							codecOptions :
-							{
-								videoGoogleStartBitrate : 1000
-							},
+								{
+									videoGoogleStartBitrate : 1000
+								},
 							appData :
-							{
-								source : 'extravideo',
-								width,
-								height,
-								resolutionScalings
-							}
+								{
+									source : 'extravideo',
+									width,
+									height,
+									resolutionScalings
+								}
 						});
 				}
 				else
@@ -4416,11 +4432,11 @@ export default class RoomClient
 						track,
 						encodings : [ { networkPriority } ],
 						appData   :
-						{
-							source : 'extravideo',
-							width,
-							height
-						}
+							{
+								source : 'extravideo',
+								width,
+								height
+							}
 					});
 				}
 
@@ -4460,7 +4476,9 @@ export default class RoomClient
 						}));
 
 					this.disableExtraVideo(producer.id)
-						.catch(() => {});
+						.catch(() =>
+						{
+						});
 				});
 
 				logger.debug('addExtraVideo() succeeded');
@@ -4528,6 +4546,7 @@ export default class RoomClient
 
 		store.dispatch(meActions.setAudioInProgress(false));
 	}
+
 	async updateRecorderPreferredMimeType({ recorderPreferredMimeType = null } = {})
 	{
 		logger.debug('updateRecorderPreferredMimeType [mime-type: "%s"]',
@@ -4651,24 +4670,24 @@ export default class RoomClient
 					{
 						encoding.networkPriority=networkPriority;
 					});
-					*/
-					encodings[0].networkPriority=networkPriority;
+					 */
+					encodings[0].networkPriority = networkPriority;
 
 					this._screenSharingProducer = await this._sendTransport.produce(
 						{
 							track,
 							encodings,
 							codecOptions :
-							{
-								videoGoogleStartBitrate : 1000
-							},
+								{
+									videoGoogleStartBitrate : 1000
+								},
 							appData :
-							{
-								source : 'screen',
-								width,
-								height,
-								resolutionScalings
-							}
+								{
+									source : 'screen',
+									width,
+									height,
+									resolutionScalings
+								}
 						});
 				}
 				else
@@ -4677,11 +4696,11 @@ export default class RoomClient
 						track,
 						encodings : [ { networkPriority } ],
 						appData   :
-						{
-							source : 'screen',
-							width,
-							height
-						}
+							{
+								source : 'screen',
+								width,
+								height
+							}
 					});
 				}
 
@@ -4724,15 +4743,15 @@ export default class RoomClient
 						{
 							track,
 							codecOptions :
-							{
-								opusStereo          : opusStereo,
-								opusFec             : opusFec,
-								opusDtx             : opusDtx,
-								opusMaxPlaybackRate : opusMaxPlaybackRate,
-								opusPtime           : opusPtime
-							},
+								{
+									opusStereo          : opusStereo,
+									opusFec             : opusFec,
+									opusDtx             : opusDtx,
+									opusMaxPlaybackRate : opusMaxPlaybackRate,
+									opusPtime           : opusPtime
+								},
 							appData :
-							{ source: 'mic' }
+								{ source: 'mic' }
 						});
 
 					store.dispatch(producerActions.addProducer(
@@ -4882,8 +4901,11 @@ export default class RoomClient
 
 		try
 		{
-			await this.sendRequest(
-				'closeProducer', { producerId: id });
+			if (!producer.isLocal)
+			{
+				await this.sendRequest(
+					'closeProducer', { producerId: id });
+			}
 		}
 		catch (error)
 		{

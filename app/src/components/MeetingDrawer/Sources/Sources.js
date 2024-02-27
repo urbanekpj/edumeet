@@ -25,6 +25,7 @@ const Sources = (props) =>
 		roomClient,
 		version,
 		sources,
+		statuses,
 		classes
 	} = props;
 
@@ -34,12 +35,13 @@ const Sources = (props) =>
 		<Paper className={classes.root}>
 			<Button size='small' onClick={(e) =>
 			{
-				roomClient.addExternalSource({ video: true, audio: true }).then(
-					(returned) =>
-					{
-						setData(returned);
-					}
-				)
+				roomClient.addExternalSource({ video: true, audio: true })
+					.then(
+						(returned) =>
+						{
+							setData(returned);
+						}
+					)
 					.catch((err) =>
 					{
 						setData(err);
@@ -49,13 +51,15 @@ const Sources = (props) =>
 			<pre> {JSON.stringify(data, null, 2)} </pre>
 
 			<pre> {version} </pre>
+			<pre> {JSON.stringify(statuses, null, 2)} </pre>
 
 			{sources.length === 0
 				? (<div>No Sources</div>)
-				: Object.values(sources).map((item) =>
-				{
-					return <Source key={item.id} source={item}/>;
-				})
+				: Object.values(sources)
+					.map((item) =>
+					{
+						return <Source key={item.id} source={item}/>;
+					})
 			}
 		</Paper>
 	);
@@ -66,7 +70,8 @@ Sources.propTypes =
 		classes    : PropTypes.object.isRequired,
 		roomClient : PropTypes.object.isRequired,
 		version    : PropTypes.string.isRequired,
-		sources    : PropTypes.object.isRequired
+		sources    : PropTypes.object.isRequired,
+		statuses   : PropTypes.object.isRequired
 	};
 
 const mapStateToProps = (state) =>
