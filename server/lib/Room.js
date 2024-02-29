@@ -961,6 +961,21 @@ class Room extends EventEmitter
 
 				break;
 			}
+			case 'removeExternalSource': {
+				try
+				{
+
+					const ret = this.whip.deleteEndpoint({ peer, data: request.data });
+
+					cb(null, ret);
+				}
+				catch (e)
+				{
+					logger.error('deleteEndpoint error', e);
+					cb(e, null);
+				}
+				break;
+			}
 
 			case 'addExternalSource': {
 				try
@@ -972,6 +987,7 @@ class Room extends EventEmitter
 				}
 				catch (e)
 				{
+					logger.error('createEndpoint error', e);
 					cb(e, null);
 				}
 				break;

@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import Logger from './logger/Logger';
-import { Room } from './Room';
 import { v4 as uuidv4 } from 'uuid';
 
 import { config } from './config/config';
@@ -38,24 +37,49 @@ class Whip extends EventEmitter
 
 	close()
 	{
-		logger.debug('close()');
+		logger.info('close room [roomId:"%s"]', this.room.id);
+	}
+
+	async deleteEndpoint({ peer, data })
+	{
+		const srcId = data.id;
+
+		logger.info('deleteEndpoint() [roomId:"%s", peerId:"%s", srcID:"%s"]', this.room.id, peer.id, srcId);
+		this.endpoints.forEach((endpoint, id) =>
+		{
+			if (endpoint.peer.id === peer.id && endpoint.srcID === srcId)
+			{
+				logger.info('deleteEndpoint() [roomId:"%s", peerId:"%s", id:"%s"]', this.room.id, peer.id, id);
+				this.handleDelete({ id })
+					.then(() => this.endpoints.delete(id));
+			}
+		});
+
+		return { };
 	}
 
 	createEndpoint({ peer, data })
 	{
-		const id =Math.random().toString(36)
-			.slice(2, 7);
-		const token = Math.random().toString(36)
-			.slice(2, 7);
+		const id = uuidv4();
+		const token = uuidv4();
 
-		logger.error(id, token, this.endpoints[id]);
-		this.endpoints.set(id, { peer, data, forceTcp: data.forceTcp, token, producers: [] });
+		logger.info('createEndpoint [roomId:"%s", peerId:"%s", id:"%s"]', this.room.id, peer.id, id);
+		this.endpoints.set(id, { peer,
+			data,
+			forceTcp  : data.forceTcp,
+			token,
+			producers : [],
+			remoteSdp : null,
+			appData   : data.appData,
+			srcID     : data.appData.id
+		});
 		peer.on('close', () =>
 		{
+			logger.info('close peer [roomId:"%s", peerId:"%s", id:"%s"]]', this.room.id, peer.id, id);
 			this.endpoints.delete(id);
 		});
 
-		return { url: `/whip/${this.room.id}/${id}`, token };
+		return { url: `/whip/${this.room.id}/${id}`, token, id };
 	}
 
 	isValidAuth(id, token)
@@ -69,6 +93,16 @@ class Whip extends EventEmitter
 
 	async handlePost({ id, sdp })
 	{
+
+		logger.info('handle post [roomId:"%s",id:"%s"]', this.room.id, id);
+		logger.debug('handle post [roomId:"%s",id:"%s"]', this.room.id, id, sdp);
+		if (!this.endpoints.has(id))
+		{
+			logger.info('endpoint already removed [roomId:"%s",id:"%s"] ', this.room.id, id);
+
+			return;
+		}
+
 		const endpoint = this.endpoints.get(id);
 
 		if (!sdp || Object.keys(sdp).length === 0)
@@ -117,7 +151,10 @@ class Whip extends EventEmitter
 
 		transport.on('dtlsstatechange', (dtlsState) =>
 		{
-			if (dtlsState === 'failed' || dtlsState === 'closed') logger.warn('WebRtcTransport "dtlsstatechange" event [dtlsState:%s]', dtlsState);
+			if (dtlsState === 'failed' || dtlsState === 'closed')
+			{
+				logger.warn('WebRtcTransport "dtlsstatechange" event [dtlsState:%s]', dtlsState);
+			}
 		});
 
 		// Store the WebRtcTransport into the Peer data Object.
@@ -162,9 +199,7 @@ class Whip extends EventEmitter
 			const producer = await transport.produce({
 				kind          : type,
 				rtpParameters : sendingRtpParameters,
-				appData       : {
-					source : 'extravideo'
-				}
+				appData       : endpoint.appData
 			});
 
 			endpoint.peer.addProducer(producer.id, producer);
@@ -174,10 +209,15 @@ class Whip extends EventEmitter
 				this.room._createConsumer({
 					consumerPeer : otherPeer, producerPeer : endpoint.peer, producer : producer
 				})
-					.catch((err) => logger.error(err));
+					.catch((err) =>
+					{
+						logger.error('Create Consumer error', err);
+						logger.error(err);
+					});
 			}
 		}
 
+		logger.error(endpoint.peer.transports);
 		endpoint.removeSdp = remoteSdp;
 
 		return endpoint.removeSdp.getSdp();
@@ -185,6 +225,15 @@ class Whip extends EventEmitter
 
 	async handleDelete({ id })
 	{
+		logger.info('handle delete [roomId:"%s",id:"%s"]', this.room.id, id);
+		logger.error(this.endpoints);
+
+		if (!this.endpoints.has(id))
+		{
+			logger.info('endpoint already removed [roomId:"%s",id:"%s"] ', this.room.id, id);
+
+			return;
+		}
 		const endpoint = this.endpoints.get(id);
 
 		endpoint.removeSdp = null;
@@ -193,13 +242,23 @@ class Whip extends EventEmitter
 		{
 			const producer = endpoint.peer.getProducer(producerId);
 
-			endpoint.peer.removeProducer(producer.id);
-			producer.close();
+			if (producer)
+			{
+				endpoint.peer.removeProducer(producer.id);
+				producer.close();
+			}
 		}
 		const transport = endpoint.peer.getTransport(endpoint.transportId);
 
-		transport.close();
-		endpoint.peer.removeTransport(transport.id);
+		if (transport)
+		{
+			transport.close();
+			endpoint.peer.removeTransport(transport.id);
+		}
+		else
+		{
+			logger.warn('transport not exists [roomId:"%s",id:"%s"] ', this.room.id, id);
+		}
 
 		endpoint.producers = [];
 		endpoint.transportId = null;
@@ -207,9 +266,19 @@ class Whip extends EventEmitter
 
 	async handlePatch({ id })
 	{
-		const endpoint = this.endpoints.get(id);
-		const { remoteSdp } = endpoint.remoteSdp;
 
+		logger.info('handle patch [roomId:"%s",id:"%s"]', this.room.id, id);
+
+		if (!this.endpoints.has(id))
+		{
+			logger.info('endpoint already removed [roomId:"%s",id:"%s"] ', this.room.id, id);
+
+			return;
+		}
+		const endpoint = this.endpoints.get(id);
+		const remoteSdp = endpoint.remoteSdp;
+
+		logger.error(endpoint.peer.transports);
 		const transport = endpoint.peer.getTransport(endpoint.transportId);
 
 		if (!transport) throw new Error(`transport with id "${endpoint.transportId}" does not exist`);

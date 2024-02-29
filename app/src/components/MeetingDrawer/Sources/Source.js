@@ -61,7 +61,10 @@ const Source = (props) =>
 			<div>{source.id} - {source.name} - {source.device}</div>
 			<Button className={classes.button} size='small' onClick={() =>
 			{
-				roomClient.addExternalSource({ video: true, audio: true })
+				roomClient.addExternalSource({ appData : {
+					source : 'extravideo',
+					id     : source.id
+				} })
 					.then(
 						(data) =>
 						{
@@ -102,7 +105,16 @@ const Source = (props) =>
 
 			<Button className={classes.button} size='small' onClick={() =>
 			{
-				roomClient.disableExtraVideo(source.id);
+				roomClient.disableExtraVideo(source.id)
+					.then(() =>
+					{
+						return roomClient.removeExternalSource({ id: source.id });
+					}
+					)
+					.catch((err) =>
+					{
+						logger.error(err);
+					});
 			}}
 			> Stop </Button>
 		</div>

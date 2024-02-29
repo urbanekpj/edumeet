@@ -38,6 +38,29 @@ let ScreenShare;
 
 const logger = new Logger('RoomClient');
 
+class PreviewFakeProducer
+{
+	constructor(pid, closeCallback, track, appData = {})
+	{
+		this.id = pid;
+		this.track = track;
+		this.appData = appData;
+		this.encodings = [];
+		this.codecOptions = {};
+		this.stopTracks = true;
+		this.disableTrackOnPause = true;
+		this.zeroRtpOnPause = false;
+		this.isLocal = true;
+		this.onClose = closeCallback;
+	}
+
+	close()
+	{
+		logger.debug('close');
+		this.onClose();
+	}
+}
+
 const VIDEO_CONSTRAINS =
 	{
 		'low' :
@@ -2647,13 +2670,18 @@ export default class RoomClient
 		));
 	}
 
-	async addExternalSource({ video, audio })
+	async addExternalSource(data)
 	{
-		logger.debug('addExternalSource()', video, audio);
+		logger.debug('addExternalSource()', data);
 
-		return await this.sendRequest(
-			'addExternalSource',
-			{ video, audio });
+		return await this.sendRequest('addExternalSource', data);
+	}
+
+	async removeExternalSource(data)
+	{
+		logger.debug('removeExternalSource()', data);
+
+		return await this.sendRequest('removeExternalSource', data);
 	}
 
 	async join({ roomId, joinVideo, joinAudio })
@@ -4286,30 +4314,8 @@ export default class RoomClient
 			'addExtraVideoPreview()'
 		);
 
-		class PreviewFakeProducer
-		{
-			constructor(track, appData = {})
-			{
-				this.id = id;
-				this.track = track;
-				this.appData = appData;
-				this.encodings = [];
-				this.codecOptions = {};
-				this.stopTracks = true;
-				this.disableTrackOnPause = true;
-				this.zeroRtpOnPause = false;
-				this.isLocal = true;
-			}
-
-			close()
-			{
-				logger.debug('close');
-				onClose();
-			}
-		}
-
 		const appData = {}; // Pass your custom application data object here if needed
-		const producer = new PreviewFakeProducer(stream, appData);
+		const producer = new PreviewFakeProducer(id, onClose, stream, appData);
 
 		this._extraVideoProducers.set(producer.id, producer);
 
